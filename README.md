@@ -1,6 +1,12 @@
 # tg15hack
 Write-ups and other stuff from the hacking compo at The Gathering 2015
 
+# External writeups
+
+[Mrtn (Mrtn)](http://martin.ingesen.no/hacking/writeup/2015/04/13/the-gathering-hacking-competition-writeup.html)
+
+[raWrz (Kakehackerene)](http://rwrz.io/hack/TG15Hack.txt)
+
 # Scoreboard
 
 \# | Name | Score
